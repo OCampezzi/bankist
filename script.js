@@ -171,9 +171,43 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAccount.movements.push(Number(amount));
 
     showUI(currentAccount);
-
-    inputTransferAmount.value = inputTransferTo.value = '';
   }
+
+  inputTransferAmount.value = inputTransferTo.value = '';
+});
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    currentAccount.username === inputCloseUsername.value &&
+    currentAccount.pin === Number(inputClosePin.value)
+  ) {
+    console.log('bateu');
+    accounts.splice(
+      accounts.findIndex(acc => acc.username == inputCloseUsername.value),
+      1
+    );
+
+    containerApp.style.opacity = 0;
+    labelWelcome.textContent = 'Log in to get started';
+  }
+
+  inputClosePin.value = inputCloseUsername.value = '';
+});
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    currentAccount.movements.push(amount);
+
+    showUI(currentAccount);
+  }
+
+  inputLoanAmount.value = '';
 });
 
 // displayMovements(account1.movements);
