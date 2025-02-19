@@ -62,6 +62,8 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 const displayMovements = function (movements) {
+  containerMovements.innerHTML = '';
+  // console.log(movements);
   movements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
@@ -92,7 +94,7 @@ const calculateBalance = function (movements) {
   labelBalance.textContent = `${balance.toFixed(2)} €`;
 };
 
-const calculateSummary = function (movements) {
+const calculateSummary = function (movements, interest) {
   const incomes = movements
     .filter(mov => mov > 0)
     .reduce((acc, cur) => acc + cur, 0);
@@ -103,13 +105,13 @@ const calculateSummary = function (movements) {
 
   const interest = movements
     .filter(mov => mov > 0)
-    .map(deposit => deposit * 0.012)
+    .map(deposit => deposit * (interest / 100))
     .filter(int => int >= 1)
     .reduce((acc, cur) => acc + cur, 0);
 
-  labelSumIn.textContent = `${incomes}€`;
-  labelSumOut.textContent = `${expenses}€`;
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumOut.textContent = `${expenses.toFixed(2)}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
 createUsernames(accounts);
@@ -138,10 +140,11 @@ btnLogin.addEventListener('click', function (e) {
     calculateBalance(currentAccount.movements);
 
     // Display summary
-    calculateSummary(currentAccount.movements);
+    calculateSummary(currentAccount.movements, currentAccount.interestRate);
   }
 
   inputLoginPin.value = inputLoginUsername.value = '';
+  inputLoginPin.blur();
 });
 
 // displayMovements(account1.movements);
