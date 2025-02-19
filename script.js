@@ -61,10 +61,10 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
+const displayMovements = function (account) {
   containerMovements.innerHTML = '';
   // console.log(movements);
-  movements.forEach(function (mov, i) {
+  account.movements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = `<div class="movements__row">
@@ -89,23 +89,24 @@ const createUsernames = function (accs) {
   });
 };
 
-const calculateBalance = function (movements) {
-  const balance = movements.reduce((acc, cur) => acc + cur, 0);
-  labelBalance.textContent = `${balance.toFixed(2)} €`;
+const calculateBalance = function (account) {
+  account.balance = account.movements.reduce((acc, cur) => acc + cur, 0);
+  // console.log(account.balance);
+  labelBalance.textContent = `${account.balance.toFixed(2)} €`;
 };
 
-const calculateSummary = function (movements, interest) {
-  const incomes = movements
+const calculateSummary = function (account) {
+  const incomes = account.movements
     .filter(mov => mov > 0)
     .reduce((acc, cur) => acc + cur, 0);
 
-  const expenses = movements
+  const expenses = account.movements
     .filter(mov => mov < 0)
     .reduce((acc, cur) => acc + cur, 0);
 
-  const interest = movements
+  const interest = account.movements
     .filter(mov => mov > 0)
-    .map(deposit => deposit * (interest / 100))
+    .map(deposit => deposit * (account.interest / 100))
     .filter(int => int >= 1)
     .reduce((acc, cur) => acc + cur, 0);
 
@@ -116,6 +117,17 @@ const calculateSummary = function (movements, interest) {
 
 createUsernames(accounts);
 let currentAccount;
+
+const showUI = function (acc) {
+  // Display movements
+  displayMovements(acc);
+
+  // Display balance
+  calculateBalance(acc);
+
+  // Display summary
+  calculateSummary(acc);
+};
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
@@ -132,19 +144,36 @@ btnLogin.addEventListener('click', function (e) {
     }`;
 
     containerApp.style.opacity = 100;
-
-    // Display movements
-    displayMovements(currentAccount.movements);
-
-    // Display balance
-    calculateBalance(currentAccount.movements);
-
-    // Display summary
-    calculateSummary(currentAccount.movements, currentAccount.interestRate);
   }
 
   inputLoginPin.value = inputLoginUsername.value = '';
   inputLoginPin.blur();
+
+  showUI(currentAccount);
+});
+
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = inputTransferAmount.value;
+  const receiverAccount = accounts.find(
+    acc => acc.username == inputTransferTo.value
+  );
+  // console.log(receiverAccount);
+
+  if (
+    receiverAccount &&
+    currentAccount.balance >= amount &&
+    receiverAccount?.username !== currentAccount.username &&
+    amount > 0
+  ) {
+    currentAccount.movements.push(-Number(amount));
+    receiverAccount.movements.push(Number(amount));
+
+    showUI(currentAccount);
+
+    inputTransferAmount.value = inputTransferTo.value = '';
+  }
 });
 
 // displayMovements(account1.movements);
